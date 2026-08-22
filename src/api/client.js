@@ -1,9 +1,16 @@
+// In dev, this stays '/api' and Vite's proxy (see vite.config.js) forwards it to
+// localhost:8080. In production there's no such proxy, so set VITE_API_BASE_URL
+// (e.g. in Vercel's project env vars) to your deployed backend's full URL,
+// e.g. https://pigeonkart-api.onrender.com/api
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
+const ADMIN_TOKEN_KEY = 'pigeonkart_admin_token'
+
 async function request(path, options = {}) {
+  const { headers: customHeaders, ...restOptions } = options
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options
+    ...restOptions,
+    headers: { 'Content-Type': 'application/json', ...(customHeaders || {}) }
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
@@ -15,6 +22,16 @@ async function request(path, options = {}) {
   return text ? JSON.parse(text) : null
 }
 
+// Same as request(), but attaches the stored admin token — used for every
+// /admin/* call except login itself.
+async function adminRequest(path, options = {}) {
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY)
+  return request(path, {
+    ...options,
+    headers: { 'X-Admin-Token': token || '', ...(options.headers || {}) }
+  })
+}
+
 export const api = {
   getProducts: () => request('/products'),
   createOrder: (payload) =>
@@ -24,5 +41,38 @@ export const api = {
     request(`/payments/razorpay/order/${orderId}`, { method: 'POST' }),
   // Called after Razorpay checkout returns a signature, so the backend can verify it
   verifyPayment: (payload) =>
-    request('/payments/razorpay/verify', { method: 'POST', body: JSON.stringify(payload) })
+    request('/payments/razorpay/verify', { method: 'POST', body: JSON.stringify(payload) }),
+
+  submitFeedback: (payload) =>
+    request('/feedback', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // --- Admin ---
+  adminLogin: async (username, password) => {
+    const { token } = await request('/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    })
+    localStorage.setItem(ADMIN_TOKEN_KEY, token)
+    return token
+  },
+  adminLogout: () => localStorage.removeItem(ADMIN_TOKEN_KEY),
+  adminIsLoggedIn: () => !!localStorage.getItem(ADMIN_TOKEN_KEY),
+  // Actually asks the backend whether the stored token is still valid, rather
+  // than just checking that something is present in localStorage.
+  adminValidateSession: () => adminRequest('/admin/session'),
+  adminGetOrders: () => adminRequest('/admin/orders'),
+  adminUpdateOrder: (orderId, payload) =>
+    adminRequest(`/admin/orders/${orderId}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  adminGetFeedback: () => adminRequest('/admin/feedback'),
+
+  // --- Admin: inventory ---
+  adminGetProducts: () => adminRequest('/admin/products'),
+  adminCreateProduct: (payload) =>
+    adminRequest('/admin/products', { method: 'POST', body: JSON.stringify(payload) }),
+  adminUpdateProduct: (id, payload) =>
+    adminRequest(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  adminBulkUpdateProducts: (products) =>
+    adminRequest('/admin/products/bulk', { method: 'PUT', body: JSON.stringify({ products }) }),
+  adminDeleteProduct: (id) =>
+    adminRequest(`/admin/products/${id}`, { method: 'DELETE' })
 }

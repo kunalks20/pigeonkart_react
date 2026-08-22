@@ -28,3 +28,21 @@ body {
 .jar-tab:not(.active):hover {
   transform: rotate(1deg);
 }
+
+/* Gentle floating motion for the decorative ingredient icons on the landing hero */
+@keyframes float-icon {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--rot, 0deg)); }
+}
+.float-icon {
+  animation: float-icon 6s ease-in-out infinite;
+}
+
+/* Category cards on the landing page — lift slightly on hover */
+.category-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 4px 6px 0px #B9863A;
+}
