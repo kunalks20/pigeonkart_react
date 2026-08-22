@@ -12,9 +12,16 @@ export default function OrderSuccess() {
         {orderId ? `Order #${orderId} is confirmed.` : 'Your order is confirmed.'}
       </p>
       <p className="text-ink/60 mb-8">You'll soon receive your shipment details on the phone number you provided.</p>
-      <Link to="/shop" className="text-pickle font-semibold hover:underline">
-        Continue shopping
-      </Link>
+      <div className="flex items-center justify-center gap-6">
+        <Link to="/shop" className="text-pickle font-semibold hover:underline">
+          Continue shopping
+        </Link>
+        {orderId && (
+          <Link to={`/feedback?order=${orderId}`} className="text-ink/60 font-semibold hover:underline">
+            Leave feedback
+          </Link>
+        )}
+      </div>
     </section>
   )
 }

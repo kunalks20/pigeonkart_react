@@ -14,13 +14,14 @@ export default function Navbar() {
     <header className="border-b-2 border-ink/10 bg-cream/80 backdrop-blur sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="font-display text-2xl font-700 text-pickle">PigeonKart</span>
+          <span className="font-display text-2xl font-700 text-pickle">🌶️ MARWARI MUNCHIES</span>
         </Link>
         <nav className="hidden sm:flex items-center gap-1">
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/shop" className={linkClass}>Shop</NavLink>
           <NavLink to="/about" className={linkClass}>About Us</NavLink>
           <NavLink to="/contact" className={linkClass}>Contact Us</NavLink>
+          <NavLink to="/feedback" className={linkClass}>Feedback</NavLink>
         </nav>
         <Link
           to="/cart"

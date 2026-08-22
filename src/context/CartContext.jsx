@@ -2,6 +2,15 @@ import React, { createContext, useContext, useMemo, useState } from 'react'
 
 const CartContext = createContext(null)
 
+// Hard ceiling per line item, regardless of how much stock exists — prevents
+// one customer from cart-hoarding the entire inventory of a product.
+const MAX_QTY_PER_ITEM = 10
+
+function clampQty(qty, stock) {
+  const ceiling = Math.min(stock, MAX_QTY_PER_ITEM)
+  return Math.max(0, Math.min(qty, ceiling))
+}
+
 export function CartProvider({ children }) {
   // items: { [productId]: { product, qty } }
   const [items, setItems] = useState({})
@@ -9,7 +18,7 @@ export function CartProvider({ children }) {
   function addItem(product, qty = 1) {
     setItems(prev => {
       const existingQty = prev[product.id]?.qty || 0
-      const nextQty = Math.min(existingQty + qty, product.stock)
+      const nextQty = clampQty(existingQty + qty, product.stock)
       if (nextQty <= 0) return prev
       return { ...prev, [product.id]: { product, qty: nextQty } }
     })
@@ -17,14 +26,14 @@ export function CartProvider({ children }) {
 
   function updateQty(productId, qty) {
     setItems(prev => {
-      if (qty <= 0) {
+      const entry = prev[productId]
+      if (!entry) return prev
+      const clamped = clampQty(qty, entry.product.stock)
+      if (clamped <= 0) {
         const next = { ...prev }
         delete next[productId]
         return next
       }
-      const entry = prev[productId]
-      if (!entry) return prev
-      const clamped = Math.min(qty, entry.product.stock)
       return { ...prev, [productId]: { ...entry, qty: clamped } }
     })
   }
@@ -55,7 +64,8 @@ export function CartProvider({ children }) {
     removeItem,
     clearCart,
     totalItems,
-    totalAmount
+    totalAmount,
+    maxQtyPerItem: MAX_QTY_PER_ITEM
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
