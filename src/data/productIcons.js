@@ -1,7 +1,7 @@
 import {
   MangoIcon, GarlicIcon, LemonIcon, ChilliIcon, VeggieIcon,
   SevIcon, DalIcon, ChivdaIcon, PeanutIcon
-} from '../components/icons.jsx'
+} from '../components/Icons.jsx'
 
 // Product id -> icon component. Add an entry here whenever a new product id
 // is added to the catalog (frontend data.js / backend seed).
