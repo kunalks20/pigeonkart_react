@@ -1,6 +1,6 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { MangoIcon, GarlicIcon, LemonIcon, ChilliIcon, SevIcon, DalIcon, ChivdaIcon, PeanutIcon } from '../components/icons.jsx'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { MangoIcon, GarlicIcon, LemonIcon, ChilliIcon, SevIcon, DalIcon, ChivdaIcon, PeanutIcon } from '../components/Icons.jsx';
 
 const CATEGORIES = [
   {
