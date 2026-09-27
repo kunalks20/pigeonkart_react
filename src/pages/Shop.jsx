@@ -6,7 +6,7 @@ import { api } from '../api/client.js'
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const initialTab = searchParams.get('tab') === 'achar' ? 'achar' : 'namkin'
+  const initialTab = searchParams.get('tab') === 'achar' ? 'achar' : 'namkeen'
   const [tab, setTab] = useState(initialTab)
   const [products, setProducts] = useState([])
 
@@ -33,10 +33,10 @@ export default function Shop() {
 
         <div className="flex gap-4 mb-6">
           <button
-            onClick={() => selectTab('namkin')}
-            className={`jar-tab px-6 py-3 font-display text-lg ${tab === 'namkin' ? 'active' : ''}`}
+            onClick={() => selectTab('namkeen')}
+            className={`jar-tab px-6 py-3 font-display text-lg ${tab === 'namkeen' ? 'active' : ''}`}
           >
-            Namkin
+            Namkeen
           </button>
           <button
             onClick={() => selectTab('achar')}

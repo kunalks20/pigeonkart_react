@@ -4,6 +4,7 @@ import { api } from '../api/client.js'
 
 const STATUS_OPTIONS = ['PENDING_PAYMENT', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'FAILED']
 const CATEGORY_OPTIONS = ['NAMKIN', 'ACHAR']
+const DISCOUNT_TYPE_OPTIONS = ['PERCENTAGE', 'FLAT']
 
 function OrderRow({ order, onSaved }) {
   const [status, setStatus] = useState(order.status)
@@ -22,7 +23,7 @@ function OrderRow({ order, onSaved }) {
 
   return (
     <tr className="border-b border-ink/10 align-top">
-      <td className="py-3 pr-4 text-xs text-ink/60">{order.id}</td>
+      <td className="py-3 pr-4 text-xs text-ink/60">{order.id}…</td>
       <td className="py-3 pr-4">
         <p className="font-semibold">{order.customerName}</p>
         <p className="text-xs text-ink/60">{order.customerPhone}</p>
@@ -33,7 +34,13 @@ function OrderRow({ order, onSaved }) {
           <div key={i}>{item.productName} × {item.qty}</div>
         ))}
       </td>
-      <td className="py-3 pr-4 font-semibold">₹{order.totalAmount}</td>
+      <td className="py-3 pr-4">
+        {order.discountAmount > 0 && (
+          <p className="text-xs text-ink/50 line-through">₹{order.subtotalAmount}</p>
+        )}
+        <p className="font-semibold">₹{order.totalAmount}</p>
+        {order.couponCode && <p className="text-xs text-pickle">{order.couponCode}</p>}
+      </td>
       <td className="py-3 pr-4">
         <select
           value={status}
@@ -135,7 +142,7 @@ function FeedbackTab() {
   )
 }
 
-const EMPTY_PRODUCT = { id: '', name: '', category: 'NAMKIN', price: 0, stock: 0, unit: '', description: '' }
+const EMPTY_PRODUCT = { id: '', name: '', category: 'NAMKIN', price: 0, stock: 0, unit: '', description: '', image: '' }
 
 function ProductCardRow({ product, onChange, onDeleted }) {
   const [deleting, setDeleting] = useState(false)
@@ -191,6 +198,13 @@ function ProductCardRow({ product, onChange, onDeleted }) {
           <label className="block text-xs font-semibold text-ink/60 mb-1">Description</label>
           <textarea value={product.description || ''} onChange={e => set('description', e.target.value)}
             rows={2} className="w-full border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-ink/60 mb-1">Image path/URL</label>
+          <input value={product.image || ''} onChange={e => set('image', e.target.value)}
+            placeholder="/images/products/ac-1.jpg"
+            className="w-full border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -325,6 +339,9 @@ function InventoryTab() {
           <input placeholder="Unit (e.g. 200g pack)" value={newProduct.unit}
             onChange={e => setNewProduct({ ...newProduct, unit: e.target.value })}
             className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+          <input placeholder="Image path (/images/products/id.jpg)" value={newProduct.image}
+            onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
+            className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper sm:col-span-2" />
           <textarea placeholder="Description" value={newProduct.description}
             onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
             className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper sm:col-span-3" rows={2} />
@@ -372,14 +389,217 @@ function InventoryTab() {
   )
 }
 
+const EMPTY_COUPON = { code: '', description: '', discountType: 'PERCENTAGE', discountValue: 10, scopeCategory: '', scopeUnitContains: '', active: true }
+
+function CouponRow({ coupon, onSaved, onDeleted }) {
+  const [form, setForm] = useState(coupon)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+
+  function set(field, value) {
+    setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  async function save() {
+    setSaving(true)
+    try {
+      const updated = await api.adminUpdateCoupon(coupon.code, form)
+      onSaved(updated)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true)
+      return
+    }
+    setDeleting(true)
+    try {
+      await api.adminDeleteCoupon(coupon.code)
+      onDeleted(coupon.code)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <div className="border-2 border-ink/15 rounded-lg bg-cream p-4">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <span className="font-display text-lg">{coupon.code}</span>
+        <label className="flex items-center gap-1.5 text-xs text-ink/60">
+          <input type="checkbox" checked={form.active} onChange={e => set('active', e.target.checked)} />
+          Active
+        </label>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <label className="block text-xs font-semibold text-ink/60 mb-1">Description</label>
+          <input value={form.description || ''} onChange={e => set('description', e.target.value)}
+            className="w-full border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-ink/60 mb-1">Discount type</label>
+            <select value={form.discountType} onChange={e => set('discountType', e.target.value)}
+              className="w-full border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper">
+              {DISCOUNT_TYPE_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-ink/60 mb-1">
+              Value {form.discountType === 'PERCENTAGE' ? '(%)' : '(₹ off)'}
+            </label>
+            <input type="number" min={0} value={form.discountValue}
+              onChange={e => set('discountValue', Number(e.target.value))}
+              className="w-full border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-ink/60 mb-1">Category (optional)</label>
+            <select value={form.scopeCategory || ''} onChange={e => set('scopeCategory', e.target.value)}
+              className="w-full border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper">
+              <option value="">Any category</option>
+              {CATEGORY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-ink/60 mb-1">Unit contains (optional)</label>
+            <input value={form.scopeUnitContains || ''} onChange={e => set('scopeUnitContains', e.target.value)}
+              placeholder="e.g. 500g"
+              className="w-full border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            onClick={save}
+            disabled={saving}
+            className="bg-pickle text-cream text-sm font-semibold px-3 py-1.5 rounded hover:bg-pickle/90 disabled:opacity-60"
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className={`text-xs font-semibold px-3 py-1.5 rounded border ${
+              confirmingDelete
+                ? 'bg-pickle text-cream border-pickle'
+                : 'text-pickle border-pickle/40 hover:bg-pickle/10'
+            } disabled:opacity-60`}
+          >
+            {deleting ? 'Removing…' : confirmingDelete ? 'Confirm delete?' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CouponsTab() {
+  const [coupons, setCoupons] = useState(null)
+  const [error, setError] = useState('')
+  const [newCoupon, setNewCoupon] = useState(EMPTY_COUPON)
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
+
+  function load() {
+    api.adminGetCoupons()
+      .then(setCoupons)
+      .catch(() => setError('Could not load coupons — your session may have expired.'))
+  }
+
+  useEffect(load, [])
+
+  function handleSaved(updated) {
+    setCoupons(prev => prev.map(c => (c.code === updated.code ? updated : c)))
+  }
+
+  function handleDeleted(code) {
+    setCoupons(prev => prev.filter(c => c.code !== code))
+  }
+
+  async function handleCreate(e) {
+    e.preventDefault()
+    setCreateError('')
+    setCreating(true)
+    try {
+      await api.adminCreateCoupon(newCoupon)
+      setNewCoupon(EMPTY_COUPON)
+      load()
+    } catch (err) {
+      setCreateError('Could not create coupon — check the code is unique.')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <div>
+      <div className="border-2 border-ink/10 rounded-lg bg-cream p-4 mb-8">
+        <h3 className="font-display text-lg mb-3">Add a new coupon</h3>
+        <form onSubmit={handleCreate} className="grid sm:grid-cols-3 gap-3">
+          <input required placeholder="Code (e.g. ACHAR500)" value={newCoupon.code}
+            onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+            className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+          <select value={newCoupon.discountType}
+            onChange={e => setNewCoupon({ ...newCoupon, discountType: e.target.value })}
+            className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper">
+            {DISCOUNT_TYPE_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <input required type="number" min={0}
+            placeholder={newCoupon.discountType === 'PERCENTAGE' ? 'Value (%)' : 'Value (₹ off)'}
+            value={newCoupon.discountValue}
+            onChange={e => setNewCoupon({ ...newCoupon, discountValue: Number(e.target.value) })}
+            className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+          <select value={newCoupon.scopeCategory}
+            onChange={e => setNewCoupon({ ...newCoupon, scopeCategory: e.target.value })}
+            className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper">
+            <option value="">Any category</option>
+            {CATEGORY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <input placeholder="Unit contains (e.g. 500g) — optional" value={newCoupon.scopeUnitContains}
+            onChange={e => setNewCoupon({ ...newCoupon, scopeUnitContains: e.target.value })}
+            className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+          <input placeholder="Description" value={newCoupon.description}
+            onChange={e => setNewCoupon({ ...newCoupon, description: e.target.value })}
+            className="border border-ink/20 rounded px-2 py-1.5 text-sm bg-paper" />
+          {createError && <p className="text-pickle text-sm sm:col-span-3">{createError}</p>}
+          <button
+            disabled={creating}
+            className="bg-ink text-cream text-sm font-semibold px-4 py-2 rounded hover:bg-ink/90 disabled:opacity-60 sm:col-span-3 w-fit"
+          >
+            {creating ? 'Adding…' : 'Add coupon'}
+          </button>
+        </form>
+      </div>
+
+      {error && <p className="text-pickle text-sm">{error}</p>}
+      {!error && !coupons && <p className="text-ink/60">Loading…</p>}
+      {coupons && coupons.length === 0 && <p className="text-ink/60">No coupons yet.</p>}
+      {coupons && coupons.length > 0 && (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {coupons.map(c => (
+            <CouponRow key={c.code} coupon={c} onSaved={handleSaved} onDeleted={handleDeleted} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
   const [tab, setTab] = useState('orders')
   const [checkingSession, setCheckingSession] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Runs every time this page is landed on (fresh navigation, refresh, or
-    // coming back to /admin later) — not just once per app load.
     async function checkSession() {
       if (!api.adminIsLoggedIn()) {
         navigate('/login')
@@ -389,8 +609,6 @@ export default function AdminDashboard() {
         await api.adminValidateSession()
         setCheckingSession(false)
       } catch (err) {
-        // Token exists locally but the backend rejects it (expired, backend
-        // restarted, tampered, etc.) — clear it and send them to log in again.
         api.adminLogout()
         navigate('/login')
       }
@@ -420,30 +638,25 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      <div className="flex gap-3 mb-8">
-        <button
-          onClick={() => setTab('orders')}
-          className={`jar-tab px-5 py-2 text-sm ${tab === 'orders' ? 'active' : ''}`}
-        >
+      <div className="flex gap-3 mb-8 flex-wrap">
+        <button onClick={() => setTab('orders')} className={`jar-tab px-5 py-2 text-sm ${tab === 'orders' ? 'active' : ''}`}>
           Orders
         </button>
-        <button
-          onClick={() => setTab('feedback')}
-          className={`jar-tab px-5 py-2 text-sm ${tab === 'feedback' ? 'active' : ''}`}
-        >
+        <button onClick={() => setTab('feedback')} className={`jar-tab px-5 py-2 text-sm ${tab === 'feedback' ? 'active' : ''}`}>
           Feedback
         </button>
-        <button
-          onClick={() => setTab('inventory')}
-          className={`jar-tab px-5 py-2 text-sm ${tab === 'inventory' ? 'active' : ''}`}
-        >
+        <button onClick={() => setTab('inventory')} className={`jar-tab px-5 py-2 text-sm ${tab === 'inventory' ? 'active' : ''}`}>
           Inventory
+        </button>
+        <button onClick={() => setTab('coupons')} className={`jar-tab px-5 py-2 text-sm ${tab === 'coupons' ? 'active' : ''}`}>
+          Coupons
         </button>
       </div>
 
       {tab === 'orders' && <OrdersTab />}
       {tab === 'feedback' && <FeedbackTab />}
       {tab === 'inventory' && <InventoryTab />}
+      {tab === 'coupons' && <CouponsTab />}
     </section>
   )
 }

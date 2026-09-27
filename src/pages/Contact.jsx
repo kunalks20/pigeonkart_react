@@ -24,36 +24,49 @@ export default function Contact() {
   }
 
   return (
-    <section className="max-w-xl mx-auto px-4 py-16">
-      <h1 className="font-display text-4xl font-700 mb-6">Contact Us</h1>
-      {sent ? (
-        <p className="text-ink/70">Thanks — we'll get back to you shortly.</p>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold mb-1">Name</label>
-            <input required value={name} onChange={e => setName(e.target.value)}
-              className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1">Email</label>
-            <input required type="email" value={email} onChange={e => setEmail(e.target.value)}
-              className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1">Message</label>
-            <textarea required rows={4} value={message} onChange={e => setMessage(e.target.value)}
-              className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
-          </div>
-          {error && <p className="text-sm text-pickle">{error}</p>}
-          <button
-            disabled={loading}
-            className="bg-pickle text-cream font-semibold px-5 py-2.5 rounded-md hover:bg-pickle/90 transition-colors disabled:opacity-60"
-          >
-            {loading ? 'Sending…' : 'Send message'}
-          </button>
-        </form>
-      )}
+    // Outer section: full-width, relative, min-h-screen — owns the background
+    // and overlay. No max-w/px/py here (that was confining the background to
+    // a narrow column) — those live on the inner wrapper below instead.
+    <section className="relative min-h-screen overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-top bg-fixed scale-110"
+        style={{ backgroundImage: "url('/images/contact-us-bg.jpeg')" }}
+      />
+      <div className="absolute inset-0 bg-ink/70" />
+
+      {/* Inner wrapper: relative so it paints above the overlay, and this is
+          where the max-width/padding/centering actually belongs. */}
+      <div className="relative max-w-2xl mx-auto px-4 py-24 text-center">
+        <h1 className="font-display text-4xl font-700 mb-6 text-cream drop-shadow-md">Contact Us</h1>
+        {sent ? (
+          <p className="text-cream/80">Thanks — we'll get back to you shortly.</p>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 text-left">
+            <div>
+              <label className="block text-sm font-semibold mb-1 text-cream/90">Name</label>
+              <input required value={name} onChange={e => setName(e.target.value)}
+                className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1 text-cream/90">Email</label>
+              <input required type="email" value={email} onChange={e => setEmail(e.target.value)}
+                className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1 text-cream/90">Message</label>
+              <textarea required rows={4} value={message} onChange={e => setMessage(e.target.value)}
+                className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
+            </div>
+            {error && <p className="text-sm text-pickle bg-cream/90 rounded px-2 py-1 inline-block">{error}</p>}
+            <button
+              disabled={loading}
+              className="bg-pickle text-cream font-semibold px-5 py-2.5 rounded-md hover:bg-pickle/90 transition-colors disabled:opacity-60"
+            >
+              {loading ? 'Sending…' : 'Send message'}
+            </button>
+          </form>
+        )}
+      </div>
     </section>
   )
 }

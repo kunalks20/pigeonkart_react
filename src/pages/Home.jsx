@@ -1,6 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { MangoIcon, GarlicIcon, LemonIcon, ChilliIcon, SevIcon, DalIcon, ChivdaIcon, PeanutIcon } from '../components/Icons.jsx';
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { MangoIcon, GarlicIcon, LemonIcon, ChilliIcon, SevIcon, DalIcon, ChivdaIcon, PeanutIcon } from '../components/icons.jsx'
+import ProductCarousel from '../components/ProductCarousel.jsx'
+import { api } from '../api/client.js'
 
 const CATEGORIES = [
   {
@@ -25,40 +27,20 @@ const CATEGORIES = [
   }
 ]
 
+// A handful of products to spotlight in the carousel — currently just the
+// first few in stock from each category. Swap this for a curated/"featured"
+// flag on the product model later if you want manual control over what shows.
+
 export default function Home() {
+  const [products, setProducts] = useState([])
+
+  useEffect(() => {
+      api.getProducts().then(setProducts).catch(() => {})
+    }, [])
+
   return (
     <div>
-      {/* HERO — real photo background (jars of achar + bowls of namkin),
-          with a warm dark overlay so the text stays readable on top of it. */}
-      <section
-        className="relative bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/hero-background.jpg')" }}
-      >
-        {/* Overlay: darker at the bottom where text sits, warm ink tone to
-            match the brand palette rather than a flat black scrim. */}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/60 to-ink/30" />
-
-        <div className="relative max-w-3xl mx-auto px-4 pt-24 pb-20 text-center">
-          <p className="uppercase tracking-[0.25em] text-sm text-turmeric font-semibold mb-3">
-            Small-batch • Home-style
-          </p>
-          <h1 className="font-display text-5xl leading-tight font-700 text-cream drop-shadow-md">
-            Namkin, achar, and everything
-            <br /> your kitchen tin is missing.
-          </h1>
-          <p className="mt-5 text-cream/85 max-w-xl mx-auto">
-            Marwari Munchies brings the snack tin and the pickle jar online — crisp namkin,
-            slow-cured achar, made the way home kitchens make it. Pick a category, fill
-            your cart, pay by UPI.
-          </p>
-          <Link
-            to="/shop"
-            className="inline-block mt-8 bg-pickle text-cream font-semibold px-8 py-3 rounded-md hover:bg-pickle/90 transition-colors"
-          >
-            Go to Shop
-          </Link>
-        </div>
-      </section>
+      <ProductCarousel products={products} />
 
       {/* CATEGORIES — real categories, with description and a direct link
           into the Shop page pre-selected to that tab */}

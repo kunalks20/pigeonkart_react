@@ -5,21 +5,42 @@
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
 const ADMIN_TOKEN_KEY = 'pigeonkart_admin_token'
+let activeRequests = 0
+const requestListeners = new Set()
+
+function notifyRequestListeners() {
+  requestListeners.forEach(listener => listener(activeRequests > 0))
+}
+
+export function subscribeToApiLoading(listener) {
+  requestListeners.add(listener)
+  listener(activeRequests > 0)
+  return () => {
+    requestListeners.delete(listener)
+  }
+}
 
 async function request(path, options = {}) {
   const { headers: customHeaders, ...restOptions } = options
-  const res = await fetch(`${BASE}${path}`, {
-    ...restOptions,
-    headers: { 'Content-Type': 'application/json', ...(customHeaders || {}) }
-  })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`API ${path} failed: ${res.status} ${text}`)
+  activeRequests += 1
+  notifyRequestListeners()
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      ...restOptions,
+      headers: { 'Content-Type': 'application/json', ...(customHeaders || {}) }
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw new Error(`API ${path} failed: ${res.status} ${text}`)
+    }
+    // Some endpoints (e.g. POST /payments/razorpay/verify) return 200/204 with no
+    // body. Calling res.json() on an empty body throws, so check for content first.
+    const text = await res.text()
+    return text ? JSON.parse(text) : null
+  } finally {
+    activeRequests -= 1
+    notifyRequestListeners()
   }
-  // Some endpoints (e.g. POST /payments/razorpay/verify) return 200/204 with no
-  // body. Calling res.json() on an empty body throws, so check for content first.
-  const text = await res.text()
-  return text ? JSON.parse(text) : null
 }
 
 // Same as request(), but attaches the stored admin token — used for every
@@ -68,11 +89,24 @@ export const api = {
   // --- Admin: inventory ---
   adminGetProducts: () => adminRequest('/admin/products'),
   adminCreateProduct: (payload) =>
-    adminRequest('/admin/products', { method: 'POST', body: JSON.stringify(payload) }),
+    adminRequest('/admin/products/add-product', { method: 'POST', body: JSON.stringify(payload) }),
   adminUpdateProduct: (id, payload) =>
     adminRequest(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   adminBulkUpdateProducts: (products) =>
     adminRequest('/admin/products/bulk', { method: 'PUT', body: JSON.stringify({ products }) }),
   adminDeleteProduct: (id) =>
-    adminRequest(`/admin/products/${id}`, { method: 'DELETE' })
+    adminRequest(`/admin/products/${id}`, { method: 'DELETE' }),
+
+  // --- Coupons ---
+  applyCoupon: (code) =>
+    request('/orders/coupons/apply', { method: 'POST', body: JSON.stringify({ code }) }),
+
+  // --- Admin: coupons ---
+  adminGetCoupons: () => adminRequest('/admin/coupons'),
+  adminCreateCoupon: (payload) =>
+    adminRequest('/admin/coupons', { method: 'POST', body: JSON.stringify(payload) }),
+  adminUpdateCoupon: (code, payload) =>
+    adminRequest(`/admin/coupons/${code}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  adminDeleteCoupon: (code) =>
+    adminRequest(`/admin/coupons/${code}`, { method: 'DELETE' })
 }

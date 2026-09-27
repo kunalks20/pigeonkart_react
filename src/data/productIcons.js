@@ -19,6 +19,6 @@ export const PRODUCT_ICONS = {
 
 // Icons shown in the decorative banner strip at the top of each Shop tab.
 export const TAB_BANNER_ICONS = {
-  namkin: [SevIcon, DalIcon, ChivdaIcon, PeanutIcon],
+  namkeen: [SevIcon, DalIcon, ChivdaIcon, PeanutIcon],
   achar: [MangoIcon, GarlicIcon, LemonIcon, ChilliIcon]
 }

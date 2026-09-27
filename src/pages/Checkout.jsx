@@ -15,7 +15,7 @@ function loadRazorpayScript() {
 }
 
 export default function Checkout() {
-  const { items, totalAmount, clearCart } = useCart()
+  const { items, pricing, coupon, clearCart } = useCart()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
@@ -34,10 +34,13 @@ export default function Checkout() {
 
     setLoading(true)
     try {
-      // 1. Create the order on the backend (reserves stock, computes total server-side).
+      // 1. Create the order on the backend (reserves stock, computes total
+      //    server-side — including re-validating the coupon and recomputing
+      //    the discount from scratch, never trusting the discount shown here).
       const order = await api.createOrder({
         customer: { name, phone, address },
-        items: items.map(i => ({ productId: i.product.id, qty: i.qty }))
+        items: items.map(i => ({ productId: i.product.id, qty: i.qty })),
+        couponCode: coupon?.code || null
       })
 
       // 2. Ask the backend to open a Razorpay order for that order id.
@@ -45,10 +48,6 @@ export default function Checkout() {
 
       // Backend mock mode (razorpay.mock-mode: true in application.yml) returns a
       // fake order id prefixed "order_mock_" instead of a real Razorpay order.
-      // A real Razorpay id/key pair is required for their checkout.js widget to
-      // work, so in mock mode we skip it entirely and simulate an instant
-      // successful UPI payment — this is what lets you test the full flow with
-      // no Razorpay account at all.
       if (payment.razorpayOrderId.startsWith('order_mock_')) {
         await api.verifyPayment({
           orderId: order.id,
@@ -66,16 +65,15 @@ export default function Checkout() {
 
       const rzp = new window.Razorpay({
         key: payment.keyId,
-        amount: payment.amount, // in paise
+        amount: payment.amount,
         currency: payment.currency || 'INR',
         name: 'PigeonKart',
         description: `Order #${order.id}`,
         order_id: payment.razorpayOrderId,
-        method: { upi: true, card: false, netbanking: false, wallet: false }, // UPI-first checkout
+        method: { upi: true, card: false, netbanking: false, wallet: false },
         prefill: { name, contact: phone },
         theme: { color: '#8C2F39' },
         handler: async function (response) {
-          // 3. Backend verifies the signature before marking the order paid.
           await api.verifyPayment({
             orderId: order.id,
             razorpay_payment_id: response.razorpay_payment_id,
@@ -109,15 +107,21 @@ export default function Checkout() {
       <h1 className="font-display text-3xl font-700 mb-6">Checkout</h1>
 
       <div className="border-2 border-ink/10 rounded-lg p-4 bg-cream mb-6">
-        {items.map(({ product, qty }) => (
+        {pricing.lines.map(({ product, qty, lineTotal }) => (
           <div key={product.id} className="flex justify-between text-sm py-1">
             <span>{product.name} × {qty}</span>
-            <span>₹{product.price * qty}</span>
+            <span>₹{lineTotal}</span>
           </div>
         ))}
+        {pricing.discount > 0 && (
+          <div className="flex justify-between text-sm py-1 text-pickle">
+            <span>Discount {coupon ? `(${coupon.code})` : ''}</span>
+            <span>−₹{pricing.discount}</span>
+          </div>
+        )}
         <div className="flex justify-between font-semibold pt-2 mt-2 border-t border-ink/10">
           <span>Total</span>
-          <span>₹{totalAmount}</span>
+          <span>₹{pricing.total}</span>
         </div>
       </div>
 
@@ -152,7 +156,7 @@ export default function Checkout() {
           disabled={loading}
           className="w-full bg-pickle text-cream font-semibold px-6 py-3 rounded-md hover:bg-pickle/90 transition-colors disabled:opacity-60"
         >
-          {loading ? 'Opening UPI payment…' : `Pay ₹${totalAmount} with UPI`}
+          {loading ? 'Opening UPI payment…' : `Pay ₹${pricing.total} with UPI`}
         </button>
       </form>
     </section>

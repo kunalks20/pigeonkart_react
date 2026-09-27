@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function Footer() {
   return (
-    <footer className="mt-20 border-t-2 border-ink/10 bg-ink text-cream">
+    <footer className="border-t-2 border-ink/10 bg-ink text-cream">
       <div className="max-w-6xl mx-auto px-4 py-10 grid gap-8 sm:grid-cols-3">
         <div>
           <p className="font-display text-xl mb-2">MARWARI MUNCHIES</p>

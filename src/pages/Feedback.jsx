@@ -4,6 +4,26 @@ import { api } from '../api/client.js'
 
 const RATINGS = ['Excellent', 'Good', 'Okay', 'Not great']
 
+function BackgroundWrapper({ children }) {
+  // Same two-level pattern as About.jsx: an outer, full-width section owns
+  // the background image (so it can stretch across the whole page instead of
+  // being squeezed into the same narrow column as the content), and this
+  // inner wrapper is `relative` so its content paints above the overlay
+  // instead of being hidden underneath it.
+  return (
+    <section className="relative min-h-screen overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-fixed scale-110"
+        style={{ backgroundImage: "url('/images/feedback-bg.png')" }}
+      />
+      <div className="absolute inset-0 bg-ink/70" />
+      <div className="relative max-w-xl mx-auto px-4 py-16">
+        {children}
+      </div>
+    </section>
+  )
+}
+
 export default function Feedback() {
   const [searchParams] = useSearchParams()
   const orderId = searchParams.get('order')
@@ -21,9 +41,6 @@ export default function Feedback() {
     setError('')
     setLoading(true)
     try {
-      // The backend's Feedback model only has name/email/message, so the
-      // rating and (optional) order reference are folded into the message
-      // text rather than requiring a schema change.
       const composed = [
         rating && `Rating: ${rating}`,
         orderId && `Order: #${orderId}`,
@@ -41,17 +58,21 @@ export default function Feedback() {
 
   if (sent) {
     return (
-      <section className="max-w-xl mx-auto px-4 py-20 text-center">
-        <h1 className="font-display text-3xl font-700 mb-4 text-pickle">Thanks for the feedback!</h1>
-        <p className="text-ink/70">It genuinely helps us get the namkin and achar right.</p>
-      </section>
+      <BackgroundWrapper>
+        <div className="text-center py-4">
+          <h1 className="font-display text-3xl font-700 mb-4 text-cream drop-shadow-md">
+            Thanks for the feedback!
+          </h1>
+          <p className="text-cream/80">It genuinely helps us get the namkin and achar right.</p>
+        </div>
+      </BackgroundWrapper>
     )
   }
 
   return (
-    <section className="max-w-xl mx-auto px-4 py-16">
-      <h1 className="font-display text-4xl font-700 mb-2">Feedback</h1>
-      <p className="text-ink/60 mb-6">
+    <BackgroundWrapper>
+      <h1 className="font-display text-4xl font-700 mb-2 text-cream drop-shadow-md">Feedback</h1>
+      <p className="text-cream/80 mb-6">
         {orderId
           ? `Tell us how order #${orderId} went.`
           : 'Tell us what\'s working and what isn\'t — good or bad, we read all of it.'}
@@ -59,24 +80,26 @@ export default function Feedback() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold mb-1">Name</label>
+          <label className="block text-sm font-semibold mb-1 text-cream/90">Name</label>
           <input required value={name} onChange={e => setName(e.target.value)}
             className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-1">Email</label>
+          <label className="block text-sm font-semibold mb-1 text-cream/90">Email</label>
           <input required type="email" value={email} onChange={e => setEmail(e.target.value)}
             className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-1">How was your experience?</label>
+          <label className="block text-sm font-semibold mb-1 text-cream/90">How was your experience?</label>
           <div className="flex flex-wrap gap-2">
             {RATINGS.map(r => (
               <button
                 type="button"
                 key={r}
                 onClick={() => setRating(r)}
-                className={`jar-tab px-4 py-2 text-sm ${rating === r ? 'active' : ''}`}
+                className={`jar-tab px-4 py-2 text-sm ${
+                  rating === r ? 'active' : 'bg-cream/90 text-ink'
+                }`}
               >
                 {r}
               </button>
@@ -84,11 +107,11 @@ export default function Feedback() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-1">Your feedback</label>
+          <label className="block text-sm font-semibold mb-1 text-cream/90">Your feedback</label>
           <textarea required rows={4} value={message} onChange={e => setMessage(e.target.value)}
             className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream" />
         </div>
-        {error && <p className="text-sm text-pickle">{error}</p>}
+        {error && <p className="text-sm text-pickle bg-cream/90 rounded px-2 py-1 inline-block">{error}</p>}
         <button
           disabled={loading}
           className="bg-pickle text-cream font-semibold px-5 py-2.5 rounded-md hover:bg-pickle/90 transition-colors disabled:opacity-60"
@@ -96,6 +119,6 @@ export default function Feedback() {
           {loading ? 'Submitting…' : 'Submit feedback'}
         </button>
       </form>
-    </section>
+    </BackgroundWrapper>
   )
 }
