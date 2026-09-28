@@ -11,7 +11,7 @@ export default function OrderSuccess() {
       <p className="text-ink/70 mb-2">
         {orderId ? `Order #${orderId} is confirmed.` : 'Your order is confirmed.'}
       </p>
-      <p className="text-ink/60 mb-8">You'll soon receive your shipment details on the phone number you provided.</p>
+      <p className="text-ink/60 mb-8">You'll soon receive your shipment details.</p>
       <div className="flex items-center justify-center gap-6">
         <Link to="/shop" className="text-pickle font-semibold hover:underline">
           Continue shopping

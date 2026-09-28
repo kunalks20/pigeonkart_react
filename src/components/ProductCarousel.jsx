@@ -23,7 +23,7 @@ export default function ProductCarousel({ products }) {
   if (!products || products.length === 0) return null
 
   const current = products[index]
-  const imageSrc = current.image || (current.productCode ? `/images/${current.productCode}.jpeg` : null)
+  const imageSrc = current.image || (current.productCode ? `/images/${current.productCode.replace(/_(250G|500G)$/i, '')}.jpeg` : null)
 
   function prev() {
     setImageFailed(false)
@@ -36,7 +36,7 @@ export default function ProductCarousel({ products }) {
   return (
     <section className="w-full py-6">
       <p className="font-display font-display-bold text-center uppercase tracking-[0.2em] text-sm text-brass font-semibold mb-6">
-        Featured Pick
+        !! Our Featured Pick !!
       </p>
       <div
         className="relative bg-ink"

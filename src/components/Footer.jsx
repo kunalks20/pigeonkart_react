@@ -21,8 +21,8 @@ export default function Footer() {
         </div>
         <div>
           <p className="font-semibold text-sm mb-2 text-turmeric">Reach us</p>
-          <p className="text-sm text-cream/80">hello@marwarimunchies.in</p>
-          <p className="text-sm text-cream/80">Pune, Maharashtra</p>
+          <p className="text-sm text-cream/80">sonikunalks1997@gmail.com</p>
+          <p className="text-sm text-cream/80">Jaipur, Rajasthan (India)</p>
         </div>
       </div>
       <div className="text-center text-xs text-cream/50 pb-6">
