@@ -27,12 +27,18 @@ const CATEGORIES = [
   }
 ]
 
-// A handful of products to spotlight in the carousel — currently just the
-// first few in stock from each category. Swap this for a curated/"featured"
-// flag on the product model later if you want manual control over what shows.
+const FEATURED_PRODUCTS = [
+  { productCode: 'ALOO_BHUJIYA_500G', image: '/images/ALOO_BHUJIYA.jpeg' }
+]
 
 export default function Home() {
   const [products, setProducts] = useState([])
+  const featuredProducts = FEATURED_PRODUCTS
+    .map(({ productCode, image }) => {
+      const product = products.find(item => item.productCode === productCode)
+      return product && product.stock > 0 ? { ...product, image } : null
+    })
+    .filter(Boolean)
 
   useEffect(() => {
       api.getProducts().then(setProducts).catch(() => {})
@@ -40,7 +46,7 @@ export default function Home() {
 
   return (
     <div>
-      <ProductCarousel products={products} />
+      <ProductCarousel products={featuredProducts} />
 
       {/* CATEGORIES — real categories, with description and a direct link
           into the Shop page pre-selected to that tab */}

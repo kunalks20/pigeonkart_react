@@ -19,7 +19,12 @@ export default function Shop() {
     setSearchParams({ tab: next })
   }
 
-  const filtered = products.filter(p => p?.category?.toLowerCase() === tab)
+  const filtered = products
+    .filter(p => p?.category?.toLowerCase() === tab)
+    .map(p => ({
+      ...p,
+      image: `/images/${p.productCode.replace(/_(250G|500G)$/i, '')}.jpeg`
+    }))
   const bannerIcons = TAB_BANNER_ICONS[tab]
 
   return (

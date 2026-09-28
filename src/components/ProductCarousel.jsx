@@ -23,6 +23,7 @@ export default function ProductCarousel({ products }) {
   if (!products || products.length === 0) return null
 
   const current = products[index]
+  const imageSrc = current.image || (current.productCode ? `/images/${current.productCode}.jpeg` : null)
 
   function prev() {
     setImageFailed(false)
@@ -35,7 +36,7 @@ export default function ProductCarousel({ products }) {
   return (
     <section className="w-full py-6">
       <p className="font-display font-display-bold text-center uppercase tracking-[0.2em] text-sm text-brass font-semibold mb-6">
-        Home-style namkin & achar, delivered fresh
+        Featured Pick
       </p>
       <div
         className="relative bg-ink"
@@ -43,9 +44,9 @@ export default function ProductCarousel({ products }) {
         onMouseLeave={() => setIsPaused(false)}
       >
         <div className="relative h-[420px] sm:h-[560px]">
-          {current.productCode && !imageFailed ? (
+          {imageSrc && !imageFailed ? (
             <img
-              src={`/images/${current.productCode}.jpeg`}
+              src={imageSrc}
               alt={current.name}
               onError={() => setImageFailed(true)}
               className="w-full h-full object-cover"
@@ -66,35 +67,41 @@ export default function ProductCarousel({ products }) {
         </div>
 
         {/* Left / right arrows */}
-        <button
-          type="button"
-          onClick={prev}
-          aria-label="Previous product"
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-cream/90 text-ink flex items-center justify-center text-2xl font-bold hover:bg-cream transition-colors"
-        >
-          ‹
-        </button>
-        <button
-          type="button"
-          onClick={next}
-          aria-label="Next product"
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-cream/90 text-ink flex items-center justify-center text-2xl font-bold hover:bg-cream transition-colors"
-        >
-          ›
-        </button>
+        {products.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Previous product"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-cream/90 text-ink flex items-center justify-center text-2xl font-bold hover:bg-cream transition-colors"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next product"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-cream/90 text-ink flex items-center justify-center text-2xl font-bold hover:bg-cream transition-colors"
+            >
+              ›
+            </button>
+          </>
+        )}
       </div>
 
       {/* Dot indicators for quick jump */}
-      <div className="flex items-center justify-center gap-2 mt-4">
-        {products.map((p, i) => (
-          <button
-            key={p.id}
-            onClick={() => { setImageFailed(false); setIndex(i) }}
-            aria-label={`Go to ${p.name}`}
-            className={`w-2 h-2 rounded-full transition-colors ${i === index ? 'bg-pickle' : 'bg-ink/20'}`}
-          />
-        ))}
-      </div>
+      {products.length > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4">
+          {products.map((p, i) => (
+            <button
+              key={p.id}
+              onClick={() => { setImageFailed(false); setIndex(i) }}
+              aria-label={`Go to ${p.name}`}
+              className={`w-2 h-2 rounded-full transition-colors ${i === index ? 'bg-pickle' : 'bg-ink/20'}`}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="text-center mt-8">
         <Link
