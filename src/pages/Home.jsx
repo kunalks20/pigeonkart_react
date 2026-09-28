@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { MangoIcon, GarlicIcon, LemonIcon, ChilliIcon, SevIcon, DalIcon, ChivdaIcon, PeanutIcon } from '../components/icons.jsx'
+import { MangoIcon, GarlicIcon, LemonIcon, ChilliIcon, SevIcon, DalIcon, ChivdaIcon, PeanutIcon } from '../components/Icons.jsx'
 import ProductCarousel from '../components/ProductCarousel.jsx'
 import { api } from '../api/client.js'
 
