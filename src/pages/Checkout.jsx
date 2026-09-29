@@ -67,7 +67,7 @@ export default function Checkout() {
         key: payment.keyId,
         amount: payment.amount,
         currency: payment.currency || 'INR',
-        name: 'PigeonKart',
+        name: 'Marwari Munchies',
         description: `Order #${order.id}`,
         order_id: payment.razorpayOrderId,
         method: { upi: true, card: false, netbanking: false, wallet: false },

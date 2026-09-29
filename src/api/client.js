@@ -1,7 +1,6 @@
 // In dev, this stays '/api' and Vite's proxy (see vite.config.js) forwards it to
 // localhost:8080. In production there's no such proxy, so set VITE_API_BASE_URL
 // (e.g. in Vercel's project env vars) to your deployed backend's full URL,
-// e.g. https://pigeonkart-api.onrender.com/api
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
 const ADMIN_TOKEN_KEY = 'pigeonkart_admin_token'
