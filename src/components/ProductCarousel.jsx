@@ -66,9 +66,9 @@ export default function ProductCarousel({ featuredProducts }) {
             </div>
           )}
           {/* Dark gradient so the centered caption stays readable over any photo */}
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent" />
+          <div className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-t from-ink/90 via-ink/30 to-transparent" />
 
-          <div key={current.image} className="absolute inset-0 flex flex-col items-center justify-end text-center px-6 pb-10 carousel-caption-enter">
+          <div key={current.image} className="absolute inset-0 z-30 pointer-events-none flex flex-col items-center justify-end text-center px-6 pb-10 carousel-caption-enter">
             <h3 className="font-display text-4xl text-cream drop-shadow-md">{current.productName}</h3>
             <p className="text-cream/80 text-sm mt-2 max-w-md">{current.description}</p>
           </div>
