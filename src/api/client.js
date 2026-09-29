@@ -31,7 +31,9 @@ async function request(path, options = {}) {
     })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
-      throw new Error(`API ${path} failed: ${res.status} ${text}`)
+      const error = new Error(`API ${path} failed: ${res.status} ${text}`)
+      error.status = res.status
+      throw error
     }
     // Some endpoints (e.g. POST /payments/razorpay/verify) return 200/204 with no
     // body. Calling res.json() on an empty body throws, so check for content first.
@@ -47,10 +49,20 @@ async function request(path, options = {}) {
 // /admin/* call except login itself.
 async function adminRequest(path, options = {}) {
   const token = localStorage.getItem(ADMIN_TOKEN_KEY)
-  return request(path, {
-    ...options,
-    headers: { 'X-Admin-Token': token || '', ...(options.headers || {}) }
-  })
+  try {
+    return await request(path, {
+      ...options,
+      headers: { 'X-Admin-Token': token || '', ...(options.headers || {}) }
+    })
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) {
+      localStorage.removeItem(ADMIN_TOKEN_KEY)
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login')
+      }
+    }
+    throw error
+  }
 }
 
 export const api = {

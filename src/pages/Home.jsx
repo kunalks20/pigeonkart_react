@@ -10,7 +10,7 @@ const CATEGORIES = [
     title: 'Namkin',
     tagline: 'Crisp, roasted, home-fried',
     description:
-      'Sev, bhujia, chivda and roasted dal — the tin your grandmother always kept ' +
+      'Sev, bhujia, Mini Kachori, Gathiya and lot more — the tin your grandmother always kept ' +
       'topped up. Made in small batches and shipped the same week, so it never sits ' +
       'around losing its crunch.',
     icons: [SevIcon, DalIcon, ChivdaIcon, PeanutIcon]
@@ -20,33 +20,38 @@ const CATEGORIES = [
     title: 'Achar',
     tagline: 'Sun-cured, slow-fermented',
     description:
-      'Keri, lehsun, nimbu and mirch — pickled the old way, in mustard oil, with ' +
-      'weeks of sun-curing and no shortcuts. Every jar tastes like it came from ' +
-      'someone\'s actual kitchen, because it did.',
+      'A tangy, spicy, sweet and savory collection, from aam, nimbu and mirchi to ' +
+      'lahsun, amla, ker and ker sangri. Made in small batches for a bold, homestyle ' +
+      'touch at every meal.',
     icons: [MangoIcon, GarlicIcon, LemonIcon, ChilliIcon]
   }
 ]
 
 const FEATURED_PRODUCTS = [
-  { productCode: 'ALOO_BHUJIYA_500G', image: '/images/ALOO_BHUJIYA.jpeg' }
+  { productName: 'Ker Sangri Achar', 
+    description: 'The quintessential taste of Rajasthan—authentic, rich in heritage, and crafted with wild desert botanicals for an unforgettable spicy punch.',
+    image: '/images/ker_sangri_pickle.jpeg' 
+  },
+  { productName: 'Aloo Bhujia', 
+    description: 'From classic Bikaneri spice and zesty Aloo crunch to fiery Ratlami clove and fresh Pudina mint, our signature Bhujia range delivers the ultimate crunch in every authentic Rajasthani flavor.', 
+    image: '/images/all_bhujiya.jpeg'
+  },
+  { productName: 'Mini Kachori', 
+    description: 'A delightful twist on the classic street snack, filled with spiced potatoes and served with a side of mint chutney.', 
+    image: '/images/mini_kachori.png'
+  },
+  { productName: 'Aam Hing Achar', 
+    description: 'A refreshing and tangy pickle made from unripe mangoes, perfect for adding a zesty kick to any meal.', 
+    image: '/images/aam_hing_achar.jpeg'
+  }
+
 ]
 
 export default function Home() {
-  const [products, setProducts] = useState([])
-  const featuredProducts = FEATURED_PRODUCTS
-    .map(({ productCode, image }) => {
-      const product = products.find(item => item.productCode === productCode)
-      return product && product.stock > 0 ? { ...product, image } : null
-    })
-    .filter(Boolean)
-
-  useEffect(() => {
-      api.getProducts().then(setProducts).catch(() => {})
-    }, [])
 
   return (
     <div>
-      <ProductCarousel products={featuredProducts} />
+      <ProductCarousel featuredProducts={FEATURED_PRODUCTS} />
 
       {/* CATEGORIES — real categories, with description and a direct link
           into the Shop page pre-selected to that tab */}
