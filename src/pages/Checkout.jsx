@@ -74,18 +74,30 @@ export default function Checkout() {
         prefill: { name, contact: phone },
         theme: { color: '#8C2F39' },
         handler: async function (response) {
-          await api.verifyPayment({
-            orderId: order.id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature
-          })
-          clearCart()
-          navigate('/order-success', { state: { orderId: order.id } })
+          try {
+            await api.verifyPayment({
+              orderId: order.id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            })
+            clearCart()
+            navigate('/order-success', { state: { orderId: order.id } })
+          } catch (err) {
+            setError(err.message || 'Payment verification failed. Please contact support before retrying.')
+            setLoading(false)
+          }
         },
         modal: {
-          ondismiss: () => setLoading(false)
+          ondismiss: () => {
+            setError('Payment was cancelled. You can try again.')
+            setLoading(false)
+          }
         }
+      })
+      rzp.on('payment.failed', response => {
+        setError(response.error?.description || 'Payment failed. Please try again.')
+        setLoading(false)
       })
       rzp.open()
     } catch (err) {

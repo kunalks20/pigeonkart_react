@@ -32,6 +32,7 @@ async function request(path, options = {}) {
       const text = await res.text().catch(() => '')
       const error = new Error(`API ${path} failed: ${res.status} ${text}`)
       error.status = res.status
+      error.body = text
       throw error
     }
     // Some endpoints (e.g. POST /payments/razorpay/verify) return 200/204 with no
@@ -109,8 +110,8 @@ export const api = {
     adminRequest(`/admin/products/${id}`, { method: 'DELETE' }),
 
   // --- Coupons ---
-  applyCoupon: (code) =>
-    request('/orders/coupons/apply', { method: 'POST', body: JSON.stringify({ code }) }),
+  applyCoupon: (code, items) =>
+    request('/orders/coupons/apply', { method: 'POST', body: JSON.stringify({ code, items }) }),
 
   // --- Admin: coupons ---
   adminGetCoupons: () => adminRequest('/admin/coupons'),

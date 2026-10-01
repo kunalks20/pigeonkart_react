@@ -12,6 +12,20 @@ function matches(coupon, product) {
   return categoryOk && unitOk
 }
 
+export function couponEligibilityMessage(coupon) {
+  const requirements = []
+  if (coupon?.scopeCategory) requirements.push(`${coupon.scopeCategory} items`)
+  if (coupon?.scopeUnitContains) {
+    requirements.push(`products with a unit containing "${coupon.scopeUnitContains}"`)
+  }
+
+  if (requirements.length === 0) {
+    return "Sorry, your cart doesn't have any items eligible for this coupon."
+  }
+
+  return `Sorry, your cart doesn't have any eligible items. This coupon is only applicable to ${requirements.join(' and ')}.`
+}
+
 function discountedUnitPrice(coupon, unitPrice) {
   const discounted = coupon.discountType === 'PERCENTAGE'
     ? unitPrice - Math.floor((unitPrice * coupon.discountValue) / 100)

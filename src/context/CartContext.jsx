@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
-import { computeCartWithCoupon } from '../utils/coupon.js'
+import { computeCartWithCoupon, couponEligibilityMessage } from '../utils/coupon.js'
 import { api } from '../api/client.js'
 
 const CartContext = createContext(null);
@@ -59,15 +59,35 @@ export function CartProvider({ children }) {
 
   async function applyCoupon(code) {
     setCouponError("");
+    let result
     try {
-      const result = await api.applyCoupon(code);
-      setCoupon(result);
-      return result;
+      result = await api.applyCoupon(code, cartList.map(({ product, qty }) => ({
+        productId: product.id,
+        qty
+      })))
     } catch (err) {
       setCoupon(null);
-      setCouponError("That coupon code is invalid or no longer active.");
+      let message = "That coupon code is invalid or no longer active."
+      if (err.status === 422 && err.body) {
+        try {
+          message = JSON.parse(err.body).message || message
+        } catch {
+          message = err.body
+        }
+      }
+      setCouponError(message);
       throw err;
     }
+
+    const hasEligibleItems = computeCartWithCoupon(cartList, result).lines.some(line => line.applies)
+    if (!hasEligibleItems) {
+      setCoupon(null)
+      setCouponError(couponEligibilityMessage(result))
+      throw new Error('Coupon is not applicable to the current cart')
+    }
+
+    setCoupon(result)
+    return result
   }
 
   function removeCoupon() {

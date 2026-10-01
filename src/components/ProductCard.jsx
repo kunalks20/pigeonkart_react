@@ -6,7 +6,8 @@ export default function ProductCard({ product }) {
   const outOfStock = product.stock <= 0
   const maxQty = Math.min(product.stock, maxQtyPerItem)
   const [qty, setQty] = useState(1)
-  const [imageFailed, setImageFailed] = useState(false)
+  const imageSources = product.imageCandidates || (product.image ? [product.image] : [])
+  const [imageIndex, setImageIndex] = useState(0)
 
   function dec() {
     setQty(q => Math.max(1, q - 1))
@@ -20,11 +21,11 @@ export default function ProductCard({ product }) {
       {/* Product photo. Falls back to a labeled placeholder until a real image
           is set at product.image (see frontend/public/images/products/). */}
       <div className="relative w-full h-40 bg-turmeric/10">
-        {product.image && !imageFailed ? (
+        {imageIndex < imageSources.length ? (
           <img
-            src={product.image}
+            src={imageSources[imageIndex]}
             alt={product.name}
-            onError={() => setImageFailed(true)}
+            onError={() => setImageIndex(index => index + 1)}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -43,7 +44,7 @@ export default function ProductCard({ product }) {
         <div className="flex-1">
           <h3 className="font-display text-lg font-600">{product.name}</h3>
           <p className="text-sm text-ink/60 mt-2">{product.description}</p>
-          <p className="text-xs text-ink/50 mt-1">{product.unit}</p>
+          <p className="text-sm font-semibold text-ink/80 mt-1">{product.unit}</p>
           {!outOfStock && product.stock <= maxQtyPerItem && (
             <p className="text-xs text-brass mt-1">Only {product.stock} left</p>
           )}

@@ -38,7 +38,7 @@ const FEATURED_PRODUCTS = [
   },
   { productName: 'Mini Kachori', 
     description: 'A delightful twist on the classic street snack, filled with spiced potatoes and served with a side of mint chutney.', 
-    image: '/images/mini_kachori.png'
+    image: '/images/MINI_KACHORI.png'
   },
   { productName: 'Aam Hing Achar', 
     description: 'A refreshing and tangy pickle made from unripe mangoes, perfect for adding a zesty kick to any meal.', 

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
+import { couponEligibilityMessage } from '../utils/coupon.js'
 
 function CouponBox() {
-  const { coupon, couponError, applyCoupon, removeCoupon } = useCart()
+  const { coupon, couponError, applyCoupon, removeCoupon, pricing } = useCart()
   const [code, setCode] = useState('')
   const [applying, setApplying] = useState(false)
+  const hasEligibleItems = pricing.lines.some(line => line.applies)
 
   async function handleApply(e) {
     e.preventDefault()
@@ -20,7 +22,7 @@ function CouponBox() {
     }
   }
 
-  if (coupon) {
+  if (coupon && hasEligibleItems) {
     return (
       <div className="flex items-center justify-between border-2 border-pickle/30 bg-pickle/5 rounded-lg px-4 py-3 mb-6">
         <div>
@@ -28,6 +30,17 @@ function CouponBox() {
           {coupon.description && <p className="text-xs text-ink/60">{coupon.description}</p>}
         </div>
         <button onClick={removeCoupon} className="text-xs text-ink/60 hover:underline shrink-0">
+          Remove
+        </button>
+      </div>
+    )
+  }
+
+  if (coupon) {
+    return (
+      <div className="flex items-center justify-between border-2 border-red-700/20 bg-red-700/5 rounded-lg px-4 py-3 mb-6">
+        <p className="text-sm text-red-800">{couponEligibilityMessage(coupon)}</p>
+        <button onClick={removeCoupon} className="text-xs text-ink/60 hover:underline shrink-0 ml-4">
           Remove
         </button>
       </div>
@@ -43,7 +56,7 @@ function CouponBox() {
           placeholder="Have a coupon code?"
           className="w-full border-2 border-ink/15 rounded-md px-3 py-2 bg-cream text-sm"
         />
-        {couponError && <p className="text-xs text-pickle mt-1">{couponError}</p>}
+        {couponError && <p className="text-xs text-red-700 mt-1">{couponError}</p>}
       </div>
       <button
         disabled={applying || !code}

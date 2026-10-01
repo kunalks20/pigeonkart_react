@@ -21,10 +21,18 @@ export default function Shop() {
 
   const filtered = products
     .filter(p => p?.category?.toLowerCase() === tab)
-    .map(p => ({
-      ...p,
-      image: `/images/${p.productCode.replace(/_(250G|500G)$/i, '')}.jpeg`
-    }))
+    .map(p => {
+      const imageName = p.productCode
+        ?.replace(/\.(png|jpe?g)$/i, '')
+        .replace(/_(250G|500G)$/i, '')
+
+      return {
+        ...p,
+        imageCandidates: imageName
+          ? ['jpeg', 'jpg', 'png'].map(extension => `/images/${imageName}.${extension}`)
+          : []
+      }
+    })
   const bannerIcons = TAB_BANNER_ICONS[tab]
 
   return (
