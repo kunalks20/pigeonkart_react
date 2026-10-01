@@ -105,7 +105,7 @@ export const api = {
   adminUpdateProduct: (id, payload) =>
     adminRequest(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   adminBulkUpdateProducts: (products) =>
-    adminRequest('/admin/products/bulk', { method: 'PUT', body: JSON.stringify({ products }) }),
+    adminRequest('/admin/products/bulk', { method: 'PUT', body: JSON.stringify(products) }),
   adminDeleteProduct: (id) =>
     adminRequest(`/admin/products/${id}`, { method: 'DELETE' }),
 
