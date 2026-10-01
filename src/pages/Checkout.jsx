@@ -70,7 +70,6 @@ export default function Checkout() {
         name: 'Marwari Munchies',
         description: `Order #${order.id}`,
         order_id: payment.razorpayOrderId,
-        method: { upi: true, card: false, netbanking: false, wallet: false },
         prefill: { name, contact: phone },
         theme: { color: '#8C2F39' },
         handler: async function (response) {
