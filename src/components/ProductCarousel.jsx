@@ -43,7 +43,7 @@ export default function ProductCarousel({ featuredProducts }) {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="relative h-[420px] sm:h-[560px]">
+        <div className="relative h-[420px] sm:h-[560px] overflow-hidden">
           {current.image && !imageFailed ? (
             <>
               <img
