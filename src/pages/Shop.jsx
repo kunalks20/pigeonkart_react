@@ -9,10 +9,14 @@ export default function Shop() {
   const initialTab = searchParams.get('tab') === 'achar' ? 'achar' : 'namkeen'
   const [tab, setTab] = useState(initialTab)
   const [products, setProducts] = useState([])
+  const [loadError, setLoadError] = useState(false)
 
-  useEffect(() => {
-    api.getProducts().then(setProducts).catch(() => {})
-  }, [])
+  function loadProducts() {
+    setLoadError(false)
+    api.getProducts().then(setProducts).catch(() => setLoadError(true))
+  }
+
+  useEffect(loadProducts, [])
 
   function selectTab(next) {
     setTab(next)
@@ -69,11 +73,20 @@ export default function Shop() {
           </span>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map(p => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {loadError ? (
+          <div role="alert" className="py-8 text-center">
+            <p className="mb-4">We couldn't load products. Please try again.</p>
+            <button onClick={loadProducts} className="jar-tab px-6 py-3 font-display text-lg">
+              Try again
+            </button>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map(p => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

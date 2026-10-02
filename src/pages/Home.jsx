@@ -32,7 +32,7 @@ const FEATURED_PRODUCTS = [
     description: 'The quintessential taste of Rajasthan—authentic, rich in heritage, and crafted with wild desert botanicals for an unforgettable spicy punch.',
     image: '/images/ker_sangri_pickle.jpeg' 
   },
-  { productName: 'Aloo Bhujia', 
+  { productName: 'Masaala Munch', 
     description: 'From classic Bikaneri spice and zesty Aloo crunch to fiery Ratlami clove and fresh Pudina mint, our signature Bhujia range delivers the ultimate crunch in every authentic Rajasthani flavor.', 
     image: '/images/all_bhujiya.jpeg'
   },
