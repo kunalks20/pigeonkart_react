@@ -67,12 +67,10 @@ async function adminRequest(path, options = {}) {
 
 export const api = {
   getProducts: () => request('/products'),
-  createOrder: (payload) =>
-    request('/orders', { method: 'POST', body: JSON.stringify(payload) }),
-  // Kicks off a Razorpay order on the backend; returns { razorpayOrderId, amount, currency, keyId }
-  createPaymentOrder: (orderId) =>
-    request(`/payments/razorpay/order/${orderId}`, { method: 'POST' }),
-  // Called after Razorpay checkout returns a signature, so the backend can verify it
+  // Starts payment from cart/customer details without persisting an unpaid order.
+  createPaymentOrder: (payload) =>
+    request('/payments/razorpay/order', { method: 'POST', body: JSON.stringify(payload) }),
+  // Successful verification persists the order and returns its internal orderId.
   verifyPayment: (payload) =>
     request('/payments/razorpay/verify', { method: 'POST', body: JSON.stringify(payload) }),
 

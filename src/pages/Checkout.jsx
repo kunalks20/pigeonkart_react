@@ -34,29 +34,25 @@ export default function Checkout() {
 
     setLoading(true)
     try {
-      // 1. Create the order on the backend (reserves stock, computes total
-      //    server-side — including re-validating the coupon and recomputing
-      //    the discount from scratch, never trusting the discount shown here).
-      const order = await api.createOrder({
+      // The backend validates current prices, stock, and coupon without saving
+      // an order until payment has been verified successfully.
+      const payment = await api.createPaymentOrder({
         customer: { name, phone, address },
         items: items.map(i => ({ productId: i.product.id, qty: i.qty })),
         couponCode: coupon?.code || null
       })
 
-      // 2. Ask the backend to open a Razorpay order for that order id.
-      const payment = await api.createPaymentOrder(order.id)
-
       // Backend mock mode (razorpay.mock-mode: true in application.yml) returns a
       // fake order id prefixed "order_mock_" instead of a real Razorpay order.
       if (payment.razorpayOrderId.startsWith('order_mock_')) {
-        await api.verifyPayment({
-          orderId: order.id,
+        const result = await api.verifyPayment({
+          checkoutToken: payment.checkoutToken,
           razorpay_payment_id: 'pay_mock_' + Date.now(),
           razorpay_order_id: payment.razorpayOrderId,
           razorpay_signature: 'mock_signature'
         })
         clearCart()
-        navigate('/order-success', { state: { orderId: order.id } })
+        navigate('/order-success', { state: { orderId: result.orderId } })
         return
       }
 
@@ -68,20 +64,20 @@ export default function Checkout() {
         amount: payment.amount,
         currency: payment.currency || 'INR',
         name: 'Marwari Munchies',
-        description: `Order #${order.id}`,
+        description: 'Order Payment Request',
         order_id: payment.razorpayOrderId,
         prefill: { name, contact: phone },
         theme: { color: '#8C2F39' },
         handler: async function (response) {
           try {
-            await api.verifyPayment({
-              orderId: order.id,
+            const result = await api.verifyPayment({
+              checkoutToken: payment.checkoutToken,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature
             })
             clearCart()
-            navigate('/order-success', { state: { orderId: order.id } })
+            navigate('/order-success', { state: { orderId: result.orderId } })
           } catch (err) {
             setError(err.message || 'Payment verification failed. Please contact support before retrying.')
             setLoading(false)

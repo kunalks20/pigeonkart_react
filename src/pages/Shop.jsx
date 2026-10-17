@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard.jsx'
-import { TAB_BANNER_ICONS } from '../data/productIcons.js'
 import { api } from '../api/client.js'
 
 export default function Shop() {
@@ -37,7 +36,6 @@ export default function Shop() {
           : []
       }
     })
-  const bannerIcons = TAB_BANNER_ICONS[tab]
 
   return (
     <section
@@ -64,14 +62,14 @@ export default function Shop() {
         </div>
 
         {/* Decorative ingredient strip — swaps with the active tab */}
-        <div className="flex items-center gap-6 mb-10 opacity-70">
+        {/* <div className="flex items-center gap-6 mb-10 opacity-70">
           {bannerIcons.map((Icon, i) => (
             <Icon key={i} className="w-9 h-9" />
           ))}
           <span className="text-xs uppercase tracking-widest text-ink/50 ml-2">
             {tab === 'achar' ? 'Keri · Lehsun · Nimbu · Mirch' : 'Sev · Dal · Chivda · Moongphali'}
           </span>
-        </div>
+        </div> */}
 
         {loadError ? (
           <div role="alert" className="py-8 text-center">
