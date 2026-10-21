@@ -24,6 +24,7 @@ export default function Shop() {
 
   const filtered = products
     .filter(p => p?.category?.toLowerCase() === tab)
+    .sort((a, b) => Number(a.stock <= 0) - Number(b.stock <= 0))
     .map(p => {
       const imageName = p.productCode
         ?.replace(/\.(png|jpe?g)$/i, '')

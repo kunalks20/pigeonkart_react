@@ -26,7 +26,7 @@ export default function ProductCard({ product }) {
             src={imageSources[imageIndex]}
             alt={product.name}
             onError={() => setImageIndex(index => index + 1)}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover ${outOfStock ? 'grayscale opacity-60' : ''}`}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-brass/60 text-xs uppercase tracking-wide border-b-2 border-dashed border-brass/30">
